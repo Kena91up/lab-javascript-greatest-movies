@@ -21,49 +21,53 @@ function howManyMovies(moviesArr){
 
 // Iteration 3: All rates average - Get the average of all rates with 2 decimals
 
-
-
        function ratesAverage(movies) {
-        const nbMovie = movies.length;
-        const sumRates = movies.reduce((acc, val) => {
-        return acc + Number(val.rate)
+       let nbMovie = movies.length;
+        let sumRates = movies.reduce((acc, val) => {
+          if(val.rate){
+        return acc + Number(val.rate) 
+      }else {
+        return acc;
+      }
     },0);
-        if (movies == 0) {
+        if (movies.length == 0) {
             return 0;
-          }
+          }else
         return Number(Number(sumRates / nbMovie).toFixed(2));
       }
       
 
 // Iteration 4: Drama movies - Get the average of Drama Movies
 function dramaMoviesRate(movies) {
-    const dramaMovies = movies.filter(({ genre }) => genre.includes("Drama"));
+    let dramaMovies = movies.filter(({ genre }) => genre.includes("Drama"));
 
     return ratesAverage(dramaMovies);
 }
 
 // Iteration 5: Ordering by year - Order by year, ascending (in growing order)
 function orderByYear(movies) {
-    let releaseMovieYear = movies.sort(function (movie1, movie2) {
+  let clonedArray = JSON.parse(JSON.stringify(movies))
+    let releaseMovieYear = clonedArray.sort(function (movie1, movie2) {
             if (movie1.year > movie2.year) {
                 return 1;
-            } else if (movie1.year < movie2.year) {
+            } else if (movie2.year > movie1.year) {
                 return -1;
-            } else
+            } else {
             return movie1.title >= movie2.title ? 1 : -1;
+            }
         });
+        return clonedArray;
   }
 // Iteration 6: Alphabetic Order - Order by title and print the first 20 titles
 function orderAlphabetically(movies) {
-    const orderedMovies = movies.sort((movie1, movie2) => {
+  let cloneMovies = JSON.parse(JSON.stringify(movies))
+    const orderedMovies = cloneMovies.sort((movie1, movie2) => {
             if (movie1.title >= movie2.title) {
                 return 1;
             }
             return -1;
         });
-        let cloneMovies = JSON.parse(JSON.stringify(movies))
-    
-    return orderedMovies
+        return orderedMovies
     .map(({ title }) => title)
     .filter((movie, index) => index < 20);
 }
@@ -72,11 +76,11 @@ function orderAlphabetically(movies) {
 const data = require("./data/movies");
 
 function convertStringTimeToMinutes(stringTime) {
-  const splitPattern = new RegExp(/(\d*h)?\s?(\d*min)?/gim);
-  const timeParts = splitPattern.exec(stringTime);
+  let split = new RegExp(/(\d*h)?\s?(\d*min)?/gim);
+  let time = split.exec(stringTime);
 
-  const hours = timeParts[1] ? Number(timeParts[1].replace("h", "")) : 0;
-  const minutes = timeParts[2] ? Number(timeParts[2].replace("min", "")) : 0;
+  let hours = time[1] ? Number(time[1].replace("h", "")) : 0;
+  let minutes = time[2] ? Number(time[2].replace("min", "")) : 0;
 
   return hours * 60 + minutes;
 }
@@ -88,16 +92,29 @@ function turnHoursToMinutes(movies) {
   }
 // BONUS - Iteration 8: Best yearly rate average - Best yearly rate average
 function bestYearAvg(movies) {
-    return Object.keys(ratesByYear).reduce((avgByYear, year) => {
-      const rateSumForYear = ratesByYear[year].reduce(
-        (rateSumByYear, movieRate) => rateSumByYear + movieRate,
-        0);
-         const avgForYear = rateSumForYear / ratesByYear[year].length;
-  
-      return {
-        ...avgByYear,
-        [year]: avgForYear
-      };
-    },);
+   if(!movies.length){
+     return null;
+   }
+   let moviesByYear = {}
+   movies.forEach(singleMovie => {
+     if(singleMovie.year in moviesByYear){
+       moviesByYear[singleMovie.year].push(singleMovie)
+     } else
+     {
+        moviesByYear[singleMovie.year] = []
+        moviesByYear[singleMovie.year].push(singleMovie)
+     }
+   })
+     let maxRate = 0
+     let year = 0
+      
+     for(let currentYear in moviesByYear){
+       let average = ratesAverage(moviesByYear[currentYear])
+        if(average > maxRate) {
+          maxRate = average
+          year = currentYear
+        }
+     }
+     return `The best year was ${year} with an average rate of ${maxRate}`;
   }
   
